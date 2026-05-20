@@ -1,29 +1,33 @@
 #!/bin/bash
 # install-claude-hook.sh — install a Claude-powered pre-commit hook in the current repo
-# Usage:   bash install-claude-hook.sh
-# Or:      curl -fsSL <your-url>/install-claude-hook.sh | bash
-
 set -e
 
-# 1. Make sure we're inside a git repo and find its .git dir (works from subdirs too)
+echo "🔍 Checking git repository..."
 GIT_DIR=$(git rev-parse --git-dir 2>/dev/null) || {
   echo "❌ Not inside a git repository. cd into one and try again."
   exit 1
 }
+echo "✅ Git repo found at: $(git rev-parse --show-toplevel)"
 
-# 2. Install Claude Code if it's not already on PATH
 if ! command -v claude &> /dev/null; then
-  echo "📦 claude CLI not found — installing..."
+  echo ""
+  echo "📦 Claude Code not found on PATH."
+  echo "⬇️  Downloading Claude Code CLI..."
   curl -fsSL https://claude.ai/install.sh | bash
-  # Pick up the new binary for the rest of this session
+  echo "🔧 Updating PATH to include ~/.local/bin..."
   export PATH="$HOME/.local/bin:$PATH"
   if ! command -v claude &> /dev/null; then
-    echo "⚠️  Install ran but 'claude' still isn't on PATH. Open a new shell and re-run."
+    echo "⚠️  Download completed but 'claude' still isn't on PATH."
+    echo "    Open a new shell and re-run this script."
     exit 1
   fi
+  echo "✅ Claude Code installed successfully: $(command -v claude)"
+else
+  echo "✅ Claude Code already installed: $(command -v claude)"
 fi
 
-# 3. Write the pre-commit hook
+echo ""
+echo "🪝 Installing pre-commit hook..."
 HOOK_PATH="$GIT_DIR/hooks/pre-commit"
 mkdir -p "$(dirname "$HOOK_PATH")"
 
@@ -33,33 +37,57 @@ if [ -f "$HOOK_PATH" ]; then
   mv "$HOOK_PATH" "$BACKUP"
 fi
 
-cat > "$HOOK_PATH" <<'HOOK'
+CLAUDE_PATH=$(command -v claude 2>/dev/null || true)
+echo "📝 Writing hook to $HOOK_PATH..."
+
+cat > "$HOOK_PATH" <<HOOK
 #!/bin/bash
 # Claude-powered pre-commit review
 
-if ! command -v claude &> /dev/null; then
+# ── PATH resolution ──────────────────────────────────────────────
+export PATH="\$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:\$PATH"
+CLAUDE_BIN="${CLAUDE_PATH:-claude}"
+
+if ! command -v claude &> /dev/null && [ ! -x "\$CLAUDE_BIN" ]; then
   echo "⚠️  claude CLI not found — skipping review."
   echo "    Install with: curl -fsSL https://claude.ai/install.sh | bash"
   echo "    Or bypass this hook with: git commit --no-verify"
-  exit 1
+  exit 0
 fi
 
-DIFF=$(git diff --cached)
-[ -z "$DIFF" ] && exit 0
+CLAUDE=\$(command -v claude 2>/dev/null || echo "\$CLAUDE_BIN")
+# ─────────────────────────────────────────────────────────────────
 
-REVIEW=$(echo "$DIFF" | claude -p "Review this staged diff for bugs, security issues, and obvious problems. If you find a CRITICAL issue, start your response with 'BLOCK:'. Otherwise summarize briefly.")
+echo "🤖 Running Claude Code pre-commit review..."
 
-echo "$REVIEW"
+DIFF=\$(git diff --cached)
+[ -z "\$DIFF" ] && { echo "✅ No staged changes to review."; exit 0; }
 
-if echo "$REVIEW" | grep -q "^BLOCK:"; then
+echo "🔍 Analyzing staged diff..."
+REVIEW=\$(echo "\$DIFF" | "\$CLAUDE" -p "Review this staged diff for bugs, security issues, and obvious problems. If you find a CRITICAL issue, start your response with 'BLOCK:'. Otherwise summarize briefly.")
+
+echo ""
+echo "📋 Claude Code Review:"
+echo "───────────────────────────────────────"
+echo "\$REVIEW"
+echo "───────────────────────────────────────"
+
+if echo "\$REVIEW" | grep -q "^BLOCK:"; then
+  echo ""
   echo "❌ Commit blocked by Claude review. Use --no-verify to override."
   exit 1
 fi
 
+echo ""
+echo "✅ Review passed — proceeding with commit."
 exit 0
 HOOK
 
 chmod +x "$HOOK_PATH"
-
-echo "✅ Installed Claude pre-commit hook at $HOOK_PATH"
-echo "   Test it with: git commit (or bypass with --no-verify)"
+echo "✅ Hook installed successfully at $HOOK_PATH"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  All done! Claude Code pre-commit hook is active."
+echo "  • Test it:   git commit"
+echo "  • Bypass it: git commit --no-verify"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
