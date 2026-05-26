@@ -1,9 +1,3 @@
-# Git Diff Code Review Prompt (Complete)
-## With Confidence Scoring & False Positive Prevention
-
----
-
-## Overview
 Analyze git diff changes with confidence scoring (0-100%). Score = certainty of issue existence. Re-verify all 60%+ findings to prevent false positives.
 
 ---
