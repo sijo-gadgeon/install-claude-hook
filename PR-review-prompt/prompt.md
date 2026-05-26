@@ -19,8 +19,8 @@ composer install && npm install
 ---
 
 ## Branches
-- **BASE:** `feature/ditto-dev10.6.9`
-- **COMPARE:** `feature/DPN-103-discover-landing-add-patterns-section`
+- **BASE:** `feature/DPN-103-discover-landing-add-patterns-section`
+- **COMPARE:** `feature/ditto-dev10.6.9`
 
 ---
 
