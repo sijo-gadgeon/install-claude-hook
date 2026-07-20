@@ -3,18 +3,18 @@
 # current repo's hooks directory.
 #
 # Usage (run from inside the repo you want to install into):
-#   curl -fsSL https://raw.githubusercontent.com/<ORG>/<REPO>/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/sijo-gadgeon/install-claude-hook/main/install.sh | sh
 #
 # Or download and inspect first (recommended before piping to sh):
-#   curl -fsSLo install.sh https://raw.githubusercontent.com/<ORG>/<REPO>/main/install.sh
+#   curl -fsSLo install.sh https://raw.githubusercontent.com/sijo-gadgeon/install-claude-hook/main/install.sh
 #   less install.sh
 #   sh install.sh
 
 set -eu
 
-# ---- CHANGE THIS to the raw URL of the pre-push file in your repo ----
-HOOK_URL="https://raw.githubusercontent.com/sijo-gadgeon/install-claude-hook/sijo-gadgeon-patch-1/pre-git-hook"
-# ------------------------------------------------------------------------
+# ---- points at the actual hook file on the main branch ----
+HOOK_URL="https://raw.githubusercontent.com/sijo-gadgeon/install-claude-hook/main/pre-git-hook.sh"
+# -------------------------------------------------------------
 
 # Must be run inside a git repo
 if ! REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null); then
