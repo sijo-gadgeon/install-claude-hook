@@ -13,7 +13,7 @@
 set -eu
 
 # ---- CHANGE THIS to the raw URL of the pre-push file in your repo ----
-HOOK_URL="https://raw.githubusercontent.com/sijo-gadgeon/install-claude-hook/sijo-gadgeon-patch-1/pre-push"
+HOOK_URL="https://raw.githubusercontent.com/sijo-gadgeon/install-claude-hook/sijo-gadgeon-patch-1/pre-git-hook"
 # ------------------------------------------------------------------------
 
 # Must be run inside a git repo
