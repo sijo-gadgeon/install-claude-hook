@@ -12,6 +12,11 @@
 
 set -eu
 
+# Make this script itself executable if it was saved to disk (e.g. via
+# `curl -o install.sh`). No-op / harmless when run via `curl | sh`, since
+# $0 there is "sh" or "-" rather than a real file path.
+chmod +x "$0" 2>/dev/null || true
+
 # ---- points at the actual hook file on the main branch ----
 HOOK_URL="https://raw.githubusercontent.com/sijo-gadgeon/install-claude-hook/main/pre-git-hook.sh"
 # -------------------------------------------------------------
